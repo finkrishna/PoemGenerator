@@ -1,61 +1,49 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
+document.getElementById('poemForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    console.log("Form submitted!"); // Check 1: Does this show up?
 
-.container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 400px;
-}
+    // Get user inputs
+    const lines = document.getElementById('lines').value;
+    const topic = document.getElementById('topic').value;
+    const humor = document.getElementById('humor').value;
+    console.log("Inputs:", lines, topic, humor); // Check 2: Are the inputs captured?
 
-h1 {
-    color: #333;
-}
+    // Create the prompt for the LLM
+    const prompt = `Write a ${lines}-line poem about ${topic}. Make it humor level ${humor} (0 is serious, 5 is very funny).`;
+    console.log("Prompt created:", prompt); // Check 3: Is the prompt correct?
 
-form {
-    margin: 20px 0;
-}
+    // Display a loading message
+    document.getElementById('poemText').innerText = 'Generating your poem...';
+    console.log("Loading message set"); // Check 4: Does the text update?
 
-label {
-    display: block;
-    margin: 10px 0 5px;
-}
+    try {
+        console.log("Sending API request..."); // Check 5: Does it reach here?
+        // Call the Hugging Face API
+        const response = await fetch('https://api-inference.huggingface.co/models/gpt2', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer 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', // Ensure this is your actual key
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: prompt,
+                parameters: { max_length: 100, temperature: 0.9 }
+            })
+        });
 
-input {
-    padding: 5px;
-    width: 80%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+        console.log("API response received:", response); // Check 6: Did the API respond?
+        const data = await response.json();
+        console.log("API data:", data); // Check 7: What did the API return?
 
-button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        let poem = data[0]?.generated_text || "Sorry, I couldn't generate a poem this time!";
+        poem = poem.replace(prompt, '').trim(); // Remove the prompt from the output
+        poem = poem.split('.').join('.\n'); // Add line breaks after sentences
 
-button:hover {
-    background-color: #45a049;
-}
-
-#poemOutput {
-    margin-top: 20px;
-}
-
-#poemText {
-    font-style: italic;
-    color: #555;
-}
+        // Display the poem
+        document.getElementById('poemText').innerText = poem;
+        console.log("Poem displayed"); // Check 8: Did it display?
+    } catch (error) {
+        document.getElementById('poemText').innerText = 'Oops, something went wrong! Try again.';
+        console.error("Error:", error); // Check 9: Did it catch an error?
+    }
+});
