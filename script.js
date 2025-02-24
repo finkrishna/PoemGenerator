@@ -1,6 +1,6 @@
 document.getElementById('poemForm').addEventListener('submit', async function(event) {
     event.preventDefault();
-    console.log("Form submitted!"); // Check 1: Does this show up?
+    console.log("Form submitted!"); // Check 1: Does this show up? 
 
     // Get user inputs
     const lines = document.getElementById('lines').value;
